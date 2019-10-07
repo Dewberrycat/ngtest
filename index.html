@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html ng-app="app" ng-controller="mainC">
+<head>
+<meta charset="UTF-8">
+<title>Personal settings</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="bootstrap.min.css">
+<link href="xeditable.min.css" rel="stylesheet">
+<script src="angular.min.js"></script>
+<script src="angular-route.min.js"></script>
+<script src="dirPagination.js"></script>
+<script src="xeditable.min.js"></script>
+</head>
+<body>
+
+<div id="showcase">
+<h2>Personal settings</h2>
+<br>
+<table>
+	<tr>
+		<td ng-click="sortBy('id')">ID</td>
+		<td ng-click="sortBy('docName')">Doc. name</td>
+		<td ng-click="sortBy('docDate')">Date</td>
+		<td></td>
+	</tr>
+	<tr dir-paginate="item in data | itemsPerPage:2 | orderBy:order:rev">
+		<td>{{item.id}}</td>
+		<td>{{item.docName}}</td>
+		<td>{{item.docDate}}</td>
+		<td><a ng-click="getData(item)" href="#!edit/{{item.id}}">edit</a></td>
+	</tr>
+</table>
+<button class="save" ng-click="logout()">Save data</button>
+<dir-pagination-controls></dir-pagination-controls>
+
+</div>
+
+<ng-view></ng-view>
+
+<script>
+
+angular.module('app', ['angularUtils.directives.dirPagination', 'xeditable', 'ngRoute'])
+	.run(function($rootScope, $http){
+		$rootScope.order = 'id';
+		$rootScope.rev = false;
+		$rootScope.sortBy = function(prop) {
+			$rootScope.order == prop ? $rootScope.rev = !$rootScope.rev : $rootScope.rev = false;
+			$rootScope.order = prop;
+		}
+		$rootScope.data = JSON.parse(localStorage.getItem("testdata")) ||
+		$http.get('test.json').then(function(res){
+			$rootScope.data = res.data;
+			
+		});
+	})
+	.controller('mainC', function($scope, $rootScope, $route, $routeParams) {
+		 $scope.params = $routeParams;
+	     $scope.getData = function(i) {
+	     	$scope.alldata = i;
+	     };
+	     $scope.logout = function() {
+	     	console.log($rootScope.data);
+	     	localStorage.setItem("testdata", JSON.stringify($rootScope.data));
+	     }
+	     
+	 })
+	.config(function($routeProvider, $locationProvider) {
+		  $routeProvider
+		   .when('/edit/:userid', {
+		    templateUrl: 'user.html',
+		    controller: 'mainC'
+		  });
+
+	});
+
+</script>
+<style>
+	* {
+		outline: none;
+		position: relative;
+	}
+
+	html, body {
+		height: 100%;
+		font-family: sans-serif;
+	}
+	dir-pagination-controls,
+	ng-view {
+		display: block;
+	}
+	#showcase {
+		max-width: 700px;
+		border: 1px solid #000;
+		margin: 0 auto;
+		margin-top: 30px;
+		box-sizing: border-box;
+		padding: 10px;
+	}
+
+	#showcase table {
+		max-width: 700px;
+	}
+
+	ng-view {
+		border: 1px solid #000;
+		margin: 0 auto;
+		margin-top: 30px;
+		max-width: 700px;
+		box-sizing: border-box;
+		padding: 10px;
+	}
+
+	*[editable-text] {
+		cursor: pointer;
+	}
+
+	table td {
+		padding: 5px;
+		border: 1px solid #000;
+	}
+
+	table {
+		width: 100%;
+	}
+
+	table tr:first-child td:hover {
+		cursor: pointer;
+	}
+
+	button.save {
+		border: 1px solid #BBB;
+		background-color: #DDD;
+		border-radius: 4px;
+		padding: 5px 15px;
+		margin: 20px 0;
+	}
+
+	button.save:active {
+		background-color: #BBB;
+	}
+</style>
+</body>
+</html>
